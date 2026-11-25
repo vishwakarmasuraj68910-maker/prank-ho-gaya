@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Special Surprise ✨</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Poppins & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Poppins:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom Animations & Glassmorphism Styles */
+        body {
+            font-family: 'Poppins', 'Inter', sans-serif;
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #4a0e4e);
+            background-size: 400% 400%;
+            animation: gradientBG 12s ease infinite;
+            overflow: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+
+        /* Card Transition Animations */
+        .step-enter {
+            animation: popIn 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .step-exit {
+            animation: fadeOutDown 0.35s ease-in forwards;
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(30px) rotate(-2deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0) rotate(0deg);
+            }
+        }
+
+        @keyframes fadeOutDown {
+            0% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+        }
+
+        /* Floating Emoji Animation */
+        .float-slow {
+            animation: floating 3.5s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(5deg); }
+        }
+
+        /* Laughing Shake Animation for Page 2 */
+        .laugh-bounce {
+            display: inline-block;
+            animation: laughWobble 0.8s ease-in-out infinite;
+        }
+
+        .laugh-bounce-delay {
+            display: inline-block;
+            animation: laughWobble 0.8s ease-in-out infinite 0.2s;
+        }
+
+        @keyframes laughWobble {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.2) rotate(-12deg); }
+            50% { transform: scale(1.1) rotate(10deg); }
+            75% { transform: scale(1.25) rotate(-8deg); }
+        }
+
+        /* Glowing Button Pulse */
+        .btn-glow {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .btn-glow::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(30deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            100% { transform: translateX(100%) rotate(30deg); }
+        }
+
+        .btn-glow:active {
+            transform: scale(0.94);
+        }
+
+        /* Background Floating Orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.45;
+            z-index: 0;
+            pointer-events: none;
+            animation: orbMove 15s infinite alternate ease-in-out;
+        }
+
+        @keyframes orbMove {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, -50px) scale(1.2); }
+        }
+    </style>
+</head>
+<body class="min-h-screen w-full flex items-center justify-center p-4 relative text-white">
+
+    <!-- Ambient Background Glowing Orbs -->
+    <div class="orb w-72 h-72 bg-pink-500 top-10 -left-16"></div>
+    <div class="orb w-80 h-80 bg-indigo-500 bottom-10 -right-16" style="animation-delay: -5s;"></div>
+    <div class="orb w-60 h-60 bg-amber-500 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20" style="animation-delay: -8s;"></div>
+
+    <!-- Confetti & Particles Canvas -->
+    <canvas id="fxCanvas" class="fixed inset-0 w-full h-full pointer-events-none z-20"></canvas>
+
+    <!-- Top Sound Indicator Pill -->
+    <div id="soundBadge" class="fixed top-5 right-5 z-30 glass-card px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 text-white/80 cursor-pointer hover:bg-white/15 transition" onclick="toggleMute()">
+        <span id="soundIcon">🔊</span>
+        <span id="soundText">Sound On</span>
+    </div>
+
+    <!-- Main Container -->
+    <main class="relative z-10 w-full max-w-md mx-auto">
+        
+        <!-- Progress Dots -->
+        <div class="flex justify-center items-center gap-2.5 mb-6">
+            <div id="dot-1" class="h-2.5 w-8 rounded-full bg-gradient-to-r from-pink-500 to-violet-500 transition-all duration-500"></div>
+            <div id="dot-2" class="h-2.5 w-2.5 rounded-full bg-white/25 transition-all duration-500"></div>
+            <div id="dot-3" class="h-2.5 w-2.5 rounded-full bg-white/25 transition-all duration-500"></div>
+        </div>
+
+        <!-- ==================== PAGE 1 ==================== -->
+        <section id="page-1" class="glass-card rounded-3xl p-8 sm:p-10 text-center step-enter">
+            <div class="text-6xl sm:text-7xl mb-6 float-slow select-none">
+                👀✨
+            </div>
+            
+            <span class="inline-block px-3 py-1 rounded-full bg-white/10 text-pink-300 text-xs font-semibold tracking-wider uppercase mb-4 border border-white/10">
+                Special Message
+            </span>
+
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-snug mb-4 bg-gradient-to-r from-white via-pink-100 to-purple-200 bg-clip-text text-transparent">
+                Arre aa gaye aap!
+            </h1>
+
+            <p class="text-white/70 text-sm sm:text-base mb-8 leading-relaxed">
+                Ek chhota sa secret message hai aapke liye... neeche click karo! 👇
+            </p>
+
+            <button onclick="goToStep(2)" class="btn-glow w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 font-bold text-lg shadow-lg shadow-pink-500/30 hover:shadow-pink-500/50 flex items-center justify-center gap-2 cursor-pointer">
+                <span>Aage Dekho</span>
+                <span class="text-xl">👉</span>
+            </button>
+        </section>
+
+        <!-- ==================== PAGE 2 ==================== -->
+        <section id="page-2" class="glass-card rounded-3xl p-8 sm:p-10 text-center hidden">
+            <div class="text-6xl sm:text-7xl mb-6 select-none flex justify-center gap-2">
+                <span class="laugh-bounce">😂</span>
+                <span class="laugh-bounce-delay">🤣</span>
+            </div>
+
+            <span class="inline-block px-3 py-1 rounded-full bg-amber-400/15 text-amber-300 text-xs font-semibold tracking-wider uppercase mb-4 border border-amber-400/20">
+                Pakde Gaye! 🕵️‍♂️
+            </span>
+
+            <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-snug mb-4 text-white">
+                Mujhe pata hai ki tum meri <span class="text-amber-300 underline decoration-wavy decoration-pink-500">story</span> dekh ke aaye ho!
+            </h2>
+
+            <p class="text-white/75 text-sm sm:text-base mb-8">
+                Sach batao, curiosity ne kheench laya na? 😜
+            </p>
+
+            <button onclick="goToStep(3)" class="btn-glow w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-pink-500 font-bold text-lg shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 flex items-center justify-center gap-2 cursor-pointer">
+                <span>Ek aur baat...</span>
+                <span class="text-xl">🤫</span>
+            </button>
+        </section>
+
+        <!-- ==================== PAGE 3 ==================== -->
+        <section id="page-3" class="glass-card rounded-3xl p-8 sm:p-10 text-center hidden">
+            <div class="text-6xl sm:text-7xl mb-6 float-slow select-none">
+                😎🔥
+            </div>
+
+            <span class="inline-block px-3 py-1 rounded-full bg-emerald-400/15 text-emerald-300 text-xs font-semibold tracking-wider uppercase mb-4 border border-emerald-400/20">
+                Mission Accomplished 🚀
+            </span>
+
+            <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight leading-snug mb-4 bg-gradient-to-r from-amber-200 via-white to-cyan-200 bg-clip-text text-transparent">
+                Jao ab apana kaam karo aur ha DM me <span class="text-pink-400">thankyou</span> jaroor bolana!
+            </h2>
+
+            <p class="text-white/70 text-sm sm:text-base mb-8">
+                Prank ho gaya! Ab screenshot bhej ke react karo 💬✨
+            </p>
+
+            <button onclick="restartPrank()" class="btn-glow w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 font-bold text-lg shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 flex items-center justify-center gap-2 cursor-pointer">
+                <span>Phir se dekho</span>
+                <span class="text-xl">🔄</span>
+            </button>
+        </section>
+
+    </main>
+
+    <script>
+        /**
+         * ==========================================
+         * WEB AUDIO API SOUND SYNTHESIZER (NO EXTERNAL FILES)
+         * ==========================================
+         */
+        let audioCtx = null;
+        let isMuted = false;
+        let page1Played = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContextClass();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            document.getElementById('soundIcon').textContent = isMuted ? '🔇' : '🔊';
+            document.getElementById('soundText').textContent = isMuted ? 'Muted' : 'Sound On';
+        }
+
+        // Tone 1: Cute, pleasant welcoming chime/melody (for Page 1)
+        function playCuteTone() {
+            if (isMuted) return;
+            initAudio();
+
+            const now = audioCtx.currentTime;
+            // Cute major pentatonic arpeggio (C5, E5, G5, B5, C6)
+            const notes = [523.25, 659.25, 783.99, 987.77, 1046.50];
+            
+            notes.forEach((freq, index) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + index * 0.09);
+                
+                gain.gain.setValueAtTime(0.001, now + index * 0.09);
+                gain.gain.exponentialRampToValueAtTime(0.18, now + index * 0.09 + 0.03);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.09 + 0.45);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start(now + index * 0.09);
+                osc.stop(now + index * 0.09 + 0.5);
+            });
+        }
+
+        // Tone 2: Funny, playful comedy/boing & quirky synth laugh (for Page 2)
+        function playFunnyTone() {
+            if (isMuted) return;
+            initAudio();
+
+            const now = audioCtx.currentTime;
+
+            // 1. Cartoon Slide Boing
+            const boingOsc = audioCtx.createOscillator();
+            const boingGain = audioCtx.createGain();
+            boingOsc.type = 'triangle';
+            boingOsc.frequency.setValueAtTime(180, now);
+            boingOsc.frequency.exponentialRampToValueAtTime(620, now + 0.22);
+            boingOsc.frequency.exponentialRampToValueAtTime(280, now + 0.42);
+            boingOsc.frequency.exponentialRampToValueAtTime(750, now + 0.65);
+
+            boingGain.gain.setValueAtTime(0.25, now);
+            boingGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+
+            boingOsc.connect(boingGain);
+            boingGain.connect(audioCtx.destination);
+            boingOsc.start(now);
+            boingOsc.stop(now + 0.72);
+
+            // 2. Quirky "Ha-ha-ha-ha!" staccato notes
+            const laughNotes = [587.33, 523.25, 493.88, 440.00];
+            laughNotes.forEach((freq, idx) => {
+                const startTime = now + 0.45 + idx * 0.11;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(freq, startTime);
+
+                // Lowpass filter to make sawtooth smooth & funny
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1400, startTime);
+
+                gain.gain.setValueAtTime(0.12, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.09);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(startTime);
+                osc.stop(startTime + 0.1);
+            });
+        }
+
+        // Tone 3: Cool, triumphant/swag synth chord fanfare (for Page 3)
+        function playSwagTone() {
+            if (isMuted) return;
+            initAudio();
+
+            const now = audioCtx.currentTime;
+
+            // Swag Power Chord + Rising Lead
+            const sequence = [
+                { freq: 261.63, time: 0.0, dur: 0.25, type: 'triangle' }, // C4
+                { freq: 329.63, time: 0.12, dur: 0.25, type: 'triangle' }, // E4
+                { freq: 392.00, time: 0.24, dur: 0.25, type: 'triangle' }, // G4
+                // Big Final Swag Chord (C5 + E5 + G5 + B5)
+                { freq: 523.25, time: 0.38, dur: 0.9, type: 'sawtooth' },
+                { freq: 659.25, time: 0.38, dur: 0.9, type: 'triangle' },
+                { freq: 783.99, time: 0.38, dur: 0.9, type: 'sine' },
+                { freq: 1046.50, time: 0.38, dur: 0.9, type: 'sine' }
+            ];
+
+            sequence.forEach(note => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const filter = audioCtx.createBiquadFilter();
+
+                osc.type = note.type;
+                osc.frequency.setValueAtTime(note.freq, now + note.time);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(2200, now + note.time);
+
+                gain.gain.setValueAtTime(0.001, now + note.time);
+                gain.gain.linearRampToValueAtTime(0.14, now + note.time + 0.03);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + note.time + note.dur);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now + note.time);
+                osc.stop(now + note.time + note.dur + 0.05);
+            });
+        }
+
+        // Play cute tone automatically on first user touch/click anywhere on Page 1
+        document.addEventListener('pointerdown', () => {
+            if (!page1Played && !document.getElementById('page-1').classList.contains('hidden')) {
+                page1Played = true;
+                playCuteTone();
+            }
+        }, { once: true });
+
+        // Also attempt autoplay on load (works if browser permits)
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                try {
+                    playCuteTone();
+                } catch (e) {
+                    // Browser waiting for first interaction
+                }
+            }, 300);
+        });
+
+        /**
+         * ==========================================
+         * STEP NAVIGATION & UI TRANSITIONS
+         * ==========================================
+         */
+        let currentStep = 1;
+
+        function updateProgressDots(step) {
+            for (let i = 1; i <= 3; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if (i === step) {
+                    dot.className = 'h-2.5 w-8 rounded-full bg-gradient-to-r from-pink-500 to-violet-500 transition-all duration-500';
+                } else if (i < step) {
+                    dot.className = 'h-2.5 w-2.5 rounded-full bg-pink-400/70 transition-all duration-500';
+                } else {
+                    dot.className = 'h-2.5 w-2.5 rounded-full bg-white/25 transition-all duration-500';
+                }
+            }
+        }
+
+        function goToStep(targetStep) {
+            const currentEl = document.getElementById(`page-${currentStep}`);
+            const nextEl = document.getElementById(`page-${targetStep}`);
+
+            // Trigger corresponding sound immediately on click
+            if (targetStep === 1) playCuteTone();
+            if (targetStep === 2) playFunnyTone();
+            if (targetStep === 3) {
+                playSwagTone();
+                triggerConfettiBurst();
+            }
+
+            // Animate out current card
+            currentEl.classList.remove('step-enter');
+            currentEl.classList.add('step-exit');
+
+            setTimeout(() => {
+                currentEl.classList.add('hidden');
+                currentEl.classList.remove('step-exit');
+
+                // Show and animate in next card
+                nextEl.classList.remove('hidden');
+                nextEl.classList.add('step-enter');
+
+                currentStep = targetStep;
+                updateProgressDots(targetStep);
+            }, 300);
+        }
+
+        function restartPrank() {
+            goToStep(1);
+        }
+
+        /**
+         * ==========================================
+         * FLOATING PARTICLES & CONFETTI ENGINE
+         * ==========================================
+         */
+        const canvas = document.getElementById('fxCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let confetti = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Ambient floating sparkles
+        for (let i = 0; i < 28; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                r: Math.random() * 2.5 + 1,
+                dx: (Math.random() - 0.5) * 0.4,
+                dy: -Math.random() * 0.5 - 0.2,
+                alpha: Math.random() * 0.5 + 0.2
+            });
+        }
+
+        function triggerConfettiBurst() {
+            const colors = ['#ff4d94', '#ffbe0b', '#3a86ff', '#06d6a0', '#8338ec', '#ffffff'];
+            for (let i = 0; i < 110; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 12 + 4;
+                confetti.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 4,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360,
+                    rotSpeed: (Math.random() - 0.5) * 12,
+                    gravity: 0.28,
+                    drag: 0.96,
+                    alpha: 1
+                });
+            }
+        }
+
+        function animateFX() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw ambient floating particles
+            particles.forEach(p => {
+                p.x += p.dx;
+                p.y += p.dy;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+                ctx.fill();
+            });
+
+            // Draw confetti pieces
+            for (let i = confetti.length - 1; i >= 0; i--) {
+                const c = confetti[i];
+                c.vx *= c.drag;
+                c.vy = c.vy * c.drag + c.gravity;
+                c.x += c.vx;
+                c.y += c.vy;
+                c.rotation += c.rotSpeed;
+                c.alpha -= 0.008;
+
+                if (c.alpha <= 0 || c.y > canvas.height + 20) {
+                    confetti.splice(i, 1);
+                    continue;
+                }
+
+                ctx.save();
+                ctx.translate(c.x, c.y);
+                ctx.rotate((c.rotation * Math.PI) / 180);
+                ctx.globalAlpha = c.alpha;
+                ctx.fillStyle = c.color;
+                ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size * 0.6);
+                ctx.restore();
+            }
+
+            requestAnimationFrame(animateFX);
+        }
+
+        animateFX();
+    </script>
+</body>
+</html>
